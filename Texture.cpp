@@ -9,7 +9,8 @@
 #include "Texture.h"
 #include "Affine.h"
 
-cs200::Bitmap::Bitmap(unsigned W, unsigned H) : bmp_width(W), bmp_height(H) {}
+cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
+    bmp_width(W), bmp_height(H), bmp_stride(computeStride(W)) {}
 
 cs200::Bitmap::Bitmap(const char *bmp_file) {}
 
@@ -22,7 +23,6 @@ unsigned cs200::computeStride(unsigned W) {
 void cs200::reverseRGB(Bitmap &b) {}
 
 glm::mat4 cs200::bitmapToTextureTransform(const Bitmap &b) {
-  // TODO: Check this for any possible optimizations
   return scale(1 / b.width(), 1 / b.height()) * // NOLINT *magic*
          translate(vector(0.5f, 0.5f)); // NOLINT *magic*
 }
