@@ -16,10 +16,9 @@
 #include <cmath>
 #include <glm/glm.hpp>
 
-
 namespace cs200 {
 
-  inline bool near(float x, float y) { return std::abs(x-y)<1e-4f; }
+  inline bool near(float x, float y) { return std::abs(x - y) < 1e-4f; }
 
   bool isPoint(const glm::vec4 &P);
   bool isVector(const glm::vec4 &v);
@@ -33,7 +32,6 @@ namespace cs200 {
   glm::mat4 translate(const glm::vec4 &v);
   glm::mat4 scale(float r);
   glm::mat4 scale(float rx, float ry);
-}
-
+} // namespace cs200
 
 #endif
