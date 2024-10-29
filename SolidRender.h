@@ -13,7 +13,7 @@
 
 namespace cs200 {
 
-  class SolidRender {
+  class SolidRender { // NOLINT
   public:
     SolidRender();
     ~SolidRender();
@@ -26,7 +26,8 @@ namespace cs200 {
 
   private:
     GLint ucolor, utransform;
-    GLuint program, vao_edges, vao_faces, vertex_buffer, edge_buffer, face_buffer;
+    GLuint program, vao_edges, vao_faces, vertex_buffer, edge_buffer,
+        face_buffer;
     int mesh_edge_count, mesh_face_count;
   };
 

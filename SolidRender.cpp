@@ -26,7 +26,8 @@ static const GLchar *const vertex_shader_source = "#version 130\n\
      }";
 
 namespace cs200 {
-  static GLuint compile_shader(const GLchar *const shader_source, GLenum shader_type) {
+  static GLuint
+  compile_shader(const GLchar *const shader_source, GLenum shader_type) {
     GLuint shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &shader_source, nullptr);
     glCompileShader(shader);
@@ -50,13 +51,16 @@ namespace cs200 {
 } // namespace cs200
 
 cs200::SolidRender::SolidRender() :
-    ucolor(0), utransform(0), program(0), vao_edges(0), vao_faces(0), vertex_buffer(0), edge_buffer(0), face_buffer(0),
-    mesh_edge_count(0), mesh_face_count(0) {
+    ucolor(0), utransform(0), program(0), vao_edges(0), vao_faces(0),
+    vertex_buffer(0), edge_buffer(0), face_buffer(0), mesh_edge_count(0),
+    mesh_face_count(0) {
 
-  GLuint fragment_shader_id = cs200::compile_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
-  GLuint vertex_shader_id = cs200::compile_shader(vertex_shader_source, GL_VERTEX_SHADER);
+  GLuint fragment_shader_id =
+      cs200::compile_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
+  GLuint vertex_shader_id =
+      cs200::compile_shader(vertex_shader_source, GL_VERTEX_SHADER);
 
-  program = glCreateProgram();
+  program = glCreateProgram(); // NOLINT
 
   glAttachShader(program, fragment_shader_id);
   glAttachShader(program, vertex_shader_id);
@@ -89,11 +93,11 @@ cs200::SolidRender::SolidRender() :
 cs200::SolidRender::~SolidRender() { glDeleteProgram(program); }
 
 void cs200::SolidRender::clearFrame(const glm::vec4 &c) {
-  glClearColor(c.x, c.y, c.z, c.w);
+  glClearColor(c.x, c.y, c.z, c.w); // NOLINT
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void cs200::SolidRender::setTransform(const glm::mat4 &M) {
+void cs200::SolidRender::setTransform(const glm::mat4 &M) { // NOLINT
   glUseProgram(program);
   glUniformMatrix4fv(utransform, 1, false, &M[0][0]);
 }
@@ -108,7 +112,10 @@ void cs200::SolidRender::loadMesh(const cs200::Mesh &m) {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
   // Sending data to GPU
   glBufferData(
-      GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(m.vertexCount() * sizeof(glm::vec4)), m.vertexArray(), GL_STATIC_DRAW);
+      GL_ARRAY_BUFFER,
+      static_cast<GLsizeiptr>(m.vertexCount() * sizeof(glm::vec4)),
+      m.vertexArray(),
+      GL_STATIC_DRAW);
 
   // Binding edge buffer
   glGenBuffers(1, &edge_buffer);
@@ -141,7 +148,8 @@ void cs200::SolidRender::loadMesh(const cs200::Mesh &m) {
 
   // Binding the vertices, enabling attributes and binding the edges as elements
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-  glVertexAttribPointer(position_attribute, 4, GL_FLOAT, false, sizeof(glm::vec4), nullptr);
+  glVertexAttribPointer(
+      position_attribute, 4, GL_FLOAT, false, sizeof(glm::vec4), nullptr);
   glEnableVertexAttribArray(position_attribute);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, edge_buffer);
 
@@ -156,7 +164,8 @@ void cs200::SolidRender::loadMesh(const cs200::Mesh &m) {
 
   // Binding the vertices, enabling attributes and binding the edges as elements
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-  glVertexAttribPointer(position_attribute, 4, GL_FLOAT, false, sizeof(glm::vec4), nullptr);
+  glVertexAttribPointer(
+      position_attribute, 4, GL_FLOAT, false, sizeof(glm::vec4), nullptr);
   glEnableVertexAttribArray(position_attribute);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, face_buffer);
 
@@ -179,10 +188,10 @@ void cs200::SolidRender::unloadMesh() {
   mesh_face_count = 0;
 }
 
-void cs200::SolidRender::displayEdges(const glm::vec4 &c) {
+void cs200::SolidRender::displayEdges(const glm::vec4 &c) { // NOLINT
   glUseProgram(program);
 
-  glUniform4fv(ucolor, 1, &c.r);
+  glUniform4fv(ucolor, 1, &c.r); // NOLINT
   glBindVertexArray(vao_edges);
 
   glDrawElements(GL_LINES, mesh_edge_count * 2, GL_UNSIGNED_INT, nullptr);
@@ -190,10 +199,10 @@ void cs200::SolidRender::displayEdges(const glm::vec4 &c) {
   glBindVertexArray(0);
 }
 
-void cs200::SolidRender::displayFaces(const glm::vec4 &c) {
+void cs200::SolidRender::displayFaces(const glm::vec4 &c) { // NOLINT
   glUseProgram(program);
 
-  glUniform4fv(ucolor, 1, &c.r);
+  glUniform4fv(ucolor, 1, &c.r); // NOLINT
   glBindVertexArray(vao_faces);
 
   glDrawElements(GL_TRIANGLES, mesh_face_count * 3, GL_UNSIGNED_INT, nullptr);

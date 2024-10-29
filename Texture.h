@@ -12,13 +12,13 @@ namespace cs200 {
 
   class Bitmap {
   public:
-    explicit Bitmap(unsigned W = 64, unsigned H = 64);
-    Bitmap(const char *bmp_file);
-    unsigned char *data(void) { return &bmp_data[0]; }
-    const unsigned char *data(void) const { return &bmp_data[0]; }
-    unsigned width(void) const { return bmp_width; }
-    unsigned height(void) const { return bmp_height; }
-    unsigned stride(void) const { return bmp_stride; }
+    explicit Bitmap(unsigned W = 64, unsigned H = 64); // NOLINT
+    Bitmap(const char *bmp_file); // NOLINT
+    unsigned char *data() { return &bmp_data[0]; }
+    const unsigned char *data() const { return &bmp_data[0]; }
+    unsigned width() const { return bmp_width; }
+    unsigned height() const { return bmp_height; }
+    unsigned stride() const { return bmp_stride; }
     unsigned offset(int i, int j) const;
 
   private:

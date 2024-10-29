@@ -18,7 +18,9 @@
 
 namespace cs200 {
 
-  inline bool near(float x, float y) { return std::abs(x - y) < 1e-4f; }
+  inline bool near(float x, float y) {
+    return std::abs(x - y) < 1e-4f; // NOLINT *magic*
+  }
 
   bool isPoint(const glm::vec4 &P);
   bool isVector(const glm::vec4 &v);
