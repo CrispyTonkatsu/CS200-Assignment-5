@@ -14,7 +14,7 @@ find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(GLEW REQUIRED)
 
 add_compile_options (-fdiagnostics-color=always)
-add_compile_options(-Wextra -Wall -Wpedantic -std=c++11)
+add_compile_options( -Wextra -Wall -Wpedantic -std=c++11)
 
 # Assignment 1
 add_library(Affine Affine.cpp)
