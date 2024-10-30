@@ -7,11 +7,14 @@
  */
 
 #include "Texture.h"
+#include <cmath>
+#include <iostream>
+#include <ostream>
 #include <tuple>
 #include "Affine.h"
 
 std::tuple<unsigned char, unsigned char, unsigned char>
-calculateValue(glm::mat4 &transform, size_t x, size_t y) {
+calculateColor(glm::mat4 &transform, size_t x, size_t y) {
   glm::vec4 texture_coordinates =
       transform * cs200::vector(static_cast<float>(x), static_cast<float>(y));
 
@@ -38,9 +41,9 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
   glm::mat4 bitmap_to_texture = cs200::bitmapToTextureTransform(*this);
 
   for (size_t i = 0; i < bmp_height; i++) {
-    for (size_t j = 0; j < bmp_width; j += 3) {
+    for (size_t j = 0; j < bmp_width; j++) {
       std::tuple<unsigned char, unsigned char, unsigned char> rgb =
-          calculateValue(bitmap_to_texture, j, i);
+          calculateColor(bitmap_to_texture, j, i);
 
       bmp_data.push_back(std::get<0>(rgb));
       bmp_data.push_back(std::get<1>(rgb));
@@ -51,7 +54,10 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
 
 cs200::Bitmap::Bitmap(const char *) {}
 
-unsigned cs200::Bitmap::offset(int, int) const { return 0; }
+unsigned cs200::Bitmap::offset(int i, int j) const {
+  // TODO: Throw exception
+  return (bmp_stride * j + 3 * i);
+}
 
 unsigned cs200::computeStride(unsigned W) {
   return (W * 3) + (4 - ((W * 3) % 4));
@@ -69,7 +75,25 @@ glm::mat4 cs200::textureToBitmapTransform(const Bitmap &b) {
          scale(b.width(), b.height()); // NOLINT *magic*
 }
 
-glm::vec3 cs200::getColor(const Bitmap &, float, float) {
+float textureWrap(float x) {
+  float fraction = std::modf(x, &x);
+  fraction += 1;
+  fraction = std::modf(fraction, &x);
+
+  return fraction;
+}
+
+glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
   // TODO: Add exception throw
-  return {0, 0, 0};
+
+  // BUG: There seems to be an issue here with the texture coordinates
+  float wrapped_u = textureWrap(u);
+  float wrapped_v = textureWrap(v);
+
+  glm::vec4 bitmap_coordinates =
+      textureToBitmapTransform(b) * vector(wrapped_u, wrapped_v);
+
+  unsigned offset = b.offset(bitmap_coordinates.x, bitmap_coordinates.y);
+
+  return {b.data()[offset], b.data()[offset + 1], b.data()[offset + 2]};
 }
