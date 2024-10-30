@@ -66,7 +66,7 @@ void cs200::reverseRGB(Bitmap &) {}
 glm::mat4 cs200::bitmapToTextureTransform(const Bitmap &b) {
   return scale(
              1.f / static_cast<float>(b.width()),
-             static_cast<float>(1.f / b.height())) * // NOLINT *magic*
+             1.f / static_cast<float>(b.height())) * // NOLINT *magic*
          translate(vector(0.5f, 0.5f)); // NOLINT *magic*
 }
 
@@ -77,12 +77,12 @@ glm::mat4 cs200::textureToBitmapTransform(const Bitmap &b) {
 
 float textureWrap(float x) {
   float fraction = std::modf(x, &x);
-  fraction += 1;
-  fraction = std::modf(fraction, &x);
+  fraction = std::modf(1.f + fraction, &x);
 
   return fraction;
 }
 
+// BUG: Make sure that the right color is obtained
 glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
   // TODO: Add exception throw
 
