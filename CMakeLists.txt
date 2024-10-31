@@ -50,4 +50,7 @@ add_executable(TextureTest TextureTest.cpp)
 target_link_libraries(TextureTest PRIVATE TextureLoad Camera SquareMesh SolidRender Affine OpenGL glm::glm SDL2::SDL2 ${GLEW_LIBRARIES})
 include_directories(TextureTest ${GLEW_INCLUDE_DIRS})
 
+# Custom tests
+add_executable(Custom Custom.cpp)
+
 # vim:shiftwidth=2:

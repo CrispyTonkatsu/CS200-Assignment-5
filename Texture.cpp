@@ -8,11 +8,15 @@
 
 #include "Texture.h"
 #include <cmath>
-#include <tuple>
 #include "Affine.h"
 
-std::tuple<unsigned char, unsigned char, unsigned char>
-calculateColor(glm::mat4 &transform, size_t x, size_t y) {
+struct Color {
+  unsigned char r;
+  unsigned char g;
+  unsigned char b;
+};
+
+Color calculateColor(glm::mat4 &transform, size_t x, size_t y) {
   glm::vec4 texture_coordinates =
       transform * cs200::vector(static_cast<float>(x), static_cast<float>(y));
 
@@ -23,14 +27,14 @@ calculateColor(glm::mat4 &transform, size_t x, size_t y) {
   unsigned char b = 100 + (155 * texture_coordinates.y);
 
   if (sum > 0.16f) {
-    return std::make_tuple(r, 0, b);
+    return {r, 0, b};
   }
 
   if (sum < 0.09f) {
-    return std::make_tuple(b, 0, r);
+    return {b, 0, r};
   }
 
-  return std::make_tuple(0, 255, 0);
+  return {0, 255, 0};
 }
 
 cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
@@ -40,12 +44,11 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
 
   for (size_t j = 0; j < bmp_height; j++) {
     for (size_t i = 0; i < bmp_width; i++) {
-      std::tuple<unsigned char, unsigned char, unsigned char> rgb =
-          calculateColor(bitmap_to_texture, i, j);
+      Color rgb = calculateColor(bitmap_to_texture, i, j);
 
-      bmp_data.push_back(std::get<0>(rgb));
-      bmp_data.push_back(std::get<1>(rgb));
-      bmp_data.push_back(std::get<2>(rgb));
+      bmp_data.push_back(rgb.r);
+      bmp_data.push_back(rgb.g);
+      bmp_data.push_back(rgb.b);
     }
   }
 }
@@ -58,7 +61,7 @@ unsigned cs200::Bitmap::offset(int i, int j) const {
 }
 
 unsigned cs200::computeStride(unsigned W) {
-  return (W * 3) + (4 - ((W * 3) % 4));
+  return (W * 3) + (3 - ((W * 3) % 4));
 }
 
 void cs200::reverseRGB(Bitmap &) {}
@@ -66,23 +69,23 @@ void cs200::reverseRGB(Bitmap &) {}
 glm::mat4 cs200::bitmapToTextureTransform(const Bitmap &b) {
   return scale(
              1.f / static_cast<float>(b.width()),
-             1.f / static_cast<float>(b.height())) * // NOLINT *magic*
+             1.f / static_cast<float>(b.height())) *
          translate(vector(0.5f, 0.5f)); // NOLINT *magic*
 }
 
 glm::mat4 cs200::textureToBitmapTransform(const Bitmap &b) {
   return translate(vector(-0.5f, -0.5f)) * // NOLINT *magic*
-         scale(b.width(), b.height()); // NOLINT *magic*
+         scale(static_cast<float>(b.width()), static_cast<float>(b.height()));
 }
 
 float textureWrap(float x) {
-  float fraction = std::modf(x, &x);
-  fraction = std::modf(1.f + fraction, &x);
+  float fraction = std::fmod(x, 1.f);
+  fraction = std::fmod(1.f + fraction, 1.f);
 
   return fraction;
 }
 
-// BUG: Make sure that the right color is obtained
+// BUG: The continuity is fucked
 glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
   // TODO: Add exception throw
 
@@ -93,7 +96,8 @@ glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
       textureToBitmapTransform(b) * point(wrapped_u, wrapped_v);
 
   // TODO: add rounding
-  unsigned offset = b.offset(bitmap_coordinates.x, bitmap_coordinates.y);
+  unsigned offset = b.offset(
+      std::round(bitmap_coordinates.x), std::round(bitmap_coordinates.y));
 
   return {b.data()[offset], b.data()[offset + 1], b.data()[offset + 2]};
 }
