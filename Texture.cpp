@@ -7,14 +7,9 @@
  */
 
 #include "Texture.h"
-#include <bits/types/wint_t.h>
-#include <cmath>
 #include <fstream>
-#include <ios>
-#include <iostream>
 #include <memory>
-#include <ostream>
-#include <utility>
+#include <stdexcept>
 #include "Affine.h"
 
 struct Color {
@@ -64,11 +59,28 @@ cs200::Bitmap::Bitmap(const char *bmp_file) {
   std::fstream in(bmp_file, std::ios_base::binary | std::ios_base::in);
 
   if (!in.is_open()) {
-    // TODO: Throw exception for failed to open
+    throw std::runtime_error("[Bitmap] Attempted to construct Bitmap from a "
+                             "file which doesn't exist");
   }
 
   char header[54]; // NOLINT *magic*
   in.read(header, 54);
+
+  unsigned char ft_1 = *reinterpret_cast<unsigned char *>(header);
+  unsigned char ft_2 = *reinterpret_cast<unsigned char *>(header + 1);
+  if (ft_1 != 'B' || ft_2 != 'M') {
+    throw std::runtime_error("[Bitmap] Attempted to construct Bitmap from a "
+                             "file which is not a Bitmap file");
+  }
+
+  unsigned short bit_planes = *reinterpret_cast<unsigned short *>(header + 26);
+  unsigned short bits_per_pixel =
+      *reinterpret_cast<unsigned short *>(header + 28);
+  unsigned int compression = *reinterpret_cast<unsigned int *>(header + 30);
+  if (bit_planes != 1 || bits_per_pixel != 24 || compression != 0) {
+    throw std::runtime_error("[Bitmap] Attempted to construct a Bitmap from a "
+                             "bitmap not supported by the program");
+  }
 
   unsigned data_size = *reinterpret_cast<unsigned *>(header + 34);
   unsigned data_offset = *reinterpret_cast<unsigned *>(header + 10);
@@ -104,7 +116,8 @@ cs200::Bitmap::Bitmap(const char *bmp_file) {
 unsigned cs200::Bitmap::offset(int i, int j) const {
   if (i < 0 || j < 0 || i > static_cast<int>(bmp_width) ||
       j > static_cast<int>(bmp_height)) {
-    // TODO: Throw exception
+    throw std::out_of_range(
+        "[Bitmap] Tried to access out of range in function offset.");
   }
   return ((bmp_stride * j) + (3 * i));
 }
@@ -149,8 +162,6 @@ float textureWrap(float x) {
 }
 
 glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
-  // TODO: Add exception throw
-
   float wrapped_u = textureWrap(u);
   float wrapped_v = textureWrap(v);
 
@@ -161,7 +172,6 @@ glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
       1};
   bitmap_coordinates = glm::floor(bitmap_coordinates);
 
-  // TODO: add rounding
   unsigned offset = b.offset(
       static_cast<int>(bitmap_coordinates.x),
       static_cast<int>(bitmap_coordinates.y));
