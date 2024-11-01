@@ -51,17 +51,30 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
       bmp_data.push_back(rgb.b);
     }
   }
+
+  size_t padding = 3 - ((W * 3) % 4);
+  for (size_t i = 0; i < padding; i++) {
+    bmp_data.push_back(0);
+  }
 }
 
 cs200::Bitmap::Bitmap(const char *) {}
 
 unsigned cs200::Bitmap::offset(int i, int j) const {
-  // TODO: Throw exception
-  return (bmp_stride * j + 3 * i);
+  if (i < 0 || j < 0 || i > static_cast<int>(bmp_width) ||
+      j > static_cast<int>(bmp_height)) {
+    // TODO: Throw exception
+  }
+  return ((bmp_stride * j) + (3 * i));
 }
 
 unsigned cs200::computeStride(unsigned W) {
-  return (W * 3) + (3 - ((W * 3) % 4));
+  unsigned output = W * 3;
+  unsigned remainder = output % 4;
+  if (remainder != 0) {
+    output += (4 - remainder);
+  }
+  return output;
 }
 
 void cs200::reverseRGB(Bitmap &) {}
@@ -85,19 +98,23 @@ float textureWrap(float x) {
   return fraction;
 }
 
-// BUG: The continuity is fucked
 glm::vec3 cs200::getColor(const Bitmap &b, float u, float v) {
   // TODO: Add exception throw
 
   float wrapped_u = textureWrap(u);
   float wrapped_v = textureWrap(v);
 
-  glm::vec4 bitmap_coordinates =
-      textureToBitmapTransform(b) * point(wrapped_u, wrapped_v);
+  glm::vec4 bitmap_coordinates = {
+      wrapped_u * static_cast<float>(b.width()),
+      wrapped_v * static_cast<float>(b.height()),
+      0,
+      1};
+  bitmap_coordinates = glm::floor(bitmap_coordinates);
 
   // TODO: add rounding
   unsigned offset = b.offset(
-      std::round(bitmap_coordinates.x), std::round(bitmap_coordinates.y));
+      static_cast<int>(bitmap_coordinates.x),
+      static_cast<int>(bitmap_coordinates.y));
 
   return {b.data()[offset], b.data()[offset + 1], b.data()[offset + 2]};
 }
