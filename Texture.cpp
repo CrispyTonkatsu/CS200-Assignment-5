@@ -52,13 +52,17 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
     }
   }
 
-  size_t padding = 3 - ((W * 3) % 4);
-  for (size_t i = 0; i < padding; i++) {
-    bmp_data.push_back(0);
+  size_t padding = ((W * 3) % 4);
+  if (padding != 0) {
+    padding = 4 - padding;
+    for (size_t i = 0; i < padding; i++) {
+      bmp_data.push_back(0);
+    }
   }
 }
 
-cs200::Bitmap::Bitmap(const char *) {}
+cs200::Bitmap::Bitmap(const char *b) {
+}
 
 unsigned cs200::Bitmap::offset(int i, int j) const {
   if (i < 0 || j < 0 || i > static_cast<int>(bmp_width) ||
