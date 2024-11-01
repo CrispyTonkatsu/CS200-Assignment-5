@@ -1,13 +1,20 @@
 /**
- * File: SolidRender.cpp
+ * File: Texture.cpp
  * Name: Edgar Jose Donoso Mansilla (e.donosomansilla)
- * Assignment: 3
+ * Assignment: 5
  * Course: CS200
  * Term: FALL24
  */
 
 #include "Texture.h"
+#include <bits/types/wint_t.h>
 #include <cmath>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <memory>
+#include <ostream>
+#include <utility>
 #include "Affine.h"
 
 struct Color {
@@ -51,17 +58,47 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
       bmp_data.push_back(rgb.b);
     }
   }
-
-  size_t padding = ((W * 3) % 4);
-  if (padding != 0) {
-    padding = 4 - padding;
-    for (size_t i = 0; i < padding; i++) {
-      bmp_data.push_back(0);
-    }
-  }
 }
 
-cs200::Bitmap::Bitmap(const char *b) {
+cs200::Bitmap::Bitmap(const char *bmp_file) {
+  std::fstream in(bmp_file, std::ios_base::binary | std::ios_base::in);
+
+  if (!in.is_open()) {
+    // TODO: Throw exception for failed to open
+  }
+
+  char header[54]; // NOLINT *magic*
+  in.read(header, 54);
+
+  unsigned data_size = *reinterpret_cast<unsigned *>(header + 34);
+  unsigned data_offset = *reinterpret_cast<unsigned *>(header + 10);
+
+  int width = *reinterpret_cast<int *>(header + 18);
+  int height = *reinterpret_cast<int *>(header + 22);
+  height = std::abs(height);
+
+  bmp_width = width;
+  bmp_height = height;
+  bmp_stride = computeStride(width);
+
+  if (data_size == 0) {
+    data_size = height * bmp_stride;
+  }
+
+  std::unique_ptr<unsigned char[]> data{new unsigned char[data_size]};
+  in.seekg(data_offset, std::ios_base::beg);
+  in.read(reinterpret_cast<char *>(data.get()), data_size);
+
+  for (size_t j = 0; j < bmp_height; j++) {
+    for (size_t i = 0; i < bmp_width + 1; i++) {
+
+      unsigned index = offset(i, j);
+
+      bmp_data.push_back(data[index + 0]);
+      bmp_data.push_back(data[index + 1]);
+      bmp_data.push_back(data[index + 2]);
+    }
+  }
 }
 
 unsigned cs200::Bitmap::offset(int i, int j) const {
@@ -81,7 +118,16 @@ unsigned cs200::computeStride(unsigned W) {
   return output;
 }
 
-void cs200::reverseRGB(Bitmap &) {}
+void cs200::reverseRGB(Bitmap &b) {
+  for (size_t j = 0; j < b.height(); j++) {
+    for (size_t i = 0; i < b.width(); i++) {
+
+      int index = (j * b.stride()) + (i * 3);
+
+      std::swap(b.data()[index + 0], b.data()[index + 2]);
+    }
+  }
+}
 
 glm::mat4 cs200::bitmapToTextureTransform(const Bitmap &b) {
   return scale(
