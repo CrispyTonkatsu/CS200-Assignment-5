@@ -52,6 +52,8 @@ cs200::Bitmap::Bitmap(unsigned W, unsigned H) :
       bmp_data.push_back(rgb.g);
       bmp_data.push_back(rgb.b);
     }
+    for (unsigned p = 0; p < (bmp_stride - 3 * bmp_width); ++p)
+      bmp_data.push_back(0);
   }
 }
 
@@ -102,7 +104,7 @@ cs200::Bitmap::Bitmap(const char *bmp_file) {
   in.read(reinterpret_cast<char *>(data.get()), data_size);
 
   for (size_t j = 0; j < bmp_height; j++) {
-    for (size_t i = 0; i < bmp_width + 1; i++) {
+    for (size_t i = 0; i < bmp_width; i++) {
 
       unsigned index = offset(i, j);
 
@@ -110,12 +112,14 @@ cs200::Bitmap::Bitmap(const char *bmp_file) {
       bmp_data.push_back(data[index + 1]);
       bmp_data.push_back(data[index + 2]);
     }
+    for (unsigned p = 0; p < (bmp_stride - 3 * bmp_width); ++p)
+      bmp_data.push_back(0);
   }
 }
 
 unsigned cs200::Bitmap::offset(int i, int j) const {
-  if (i < 0 || j < 0 || i > static_cast<int>(bmp_width) ||
-      j > static_cast<int>(bmp_height)) {
+  if (i < 0 || j < 0 || i >= static_cast<int>(bmp_width) ||
+      j >= static_cast<int>(bmp_height)) {
     throw std::out_of_range(
         "[Bitmap] Tried to access out of range in function offset.");
   }
